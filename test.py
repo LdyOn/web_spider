@@ -30,11 +30,15 @@ def choicePassenger(driver):
 			return name
 
 
+def queryTicket():
+	stations = list(input("输入出发站和终点站（空格分隔）：").split())
 
 # 打开浏览器
 driver = webdriver.Firefox()
 # 等待5秒
 driver.implicitly_wait(5)
-a = choicePassenger(driver)
-print(a)
-
+# a = choicePassenger(driver)
+# print(a)
+driver.get('http://www.baidu.com')
+time.sleep(3)
+driver.get('http://www.qq.com')
