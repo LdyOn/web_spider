@@ -34,18 +34,16 @@ def login(driver):
 	driver.find_element_by_id('J-password').send_keys(password)
 	#验证码图片
 	img_code = driver.find_element_by_id('J-loginImg')
-	#移动鼠标到验证码图片，
-	# action = webdriver.ActionChains(driver).\
-	# move_to_element_with_offset(img_code,0,0).perform()
 	# 输入验证码选择
 	select = list(map(int,input("请选择验证码图片(输入1-8，多张用空格分隔):").split()))
 	"""将选择的图片序号转换为坐标，共有八张图片，
-	第一张图片坐标大约为（40，40）,左右、上下间隔大约为70"""
+	第一张图片坐标大约为（40，50）,左右、上下间隔大约为70，下面是八张图片
+	的近似点击坐标"""
 	site = { 
-		1 :(40,50),
-		2 :(110,50),
+		1 :(40,58),
+		2 :(110,57),
 		3:(180,55),
-		4:(250,50),
+		4:(250,59),
 		5:(40,120),
 		6:(110,119),
 		7:(183,125),
