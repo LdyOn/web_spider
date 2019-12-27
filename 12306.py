@@ -17,11 +17,14 @@ def login(driver):
 	
 	time.sleep(1)
 
-	js = 'var c = document.querySelectorAll(".login-hd-account >\
-	 a:nth-child(1)");\
-	 c[0].click();'
+	
 	# 执行js脚本选择账号密码登陆
-	driver.execute_script(js)
+	try:
+		driver.execute_script('var c = document.querySelectorAll\
+			(".login-hd-account > a:nth-child(1)");c[0].click();')
+	except Exception as e:
+		return False
+	
 	# 用户名
 	login_name = input("输入用户名/邮箱/手机号：")
 	# 登陆密码
@@ -48,7 +51,7 @@ def login(driver):
 		7:(183,125),
 		8:(259,122),
 	}
-	
+
 	# 逐个点击图片
 	for x in select:
 		webdriver.ActionChains(driver).move_to_element_with_offset(img_code,
@@ -58,6 +61,8 @@ def login(driver):
 
 	# 点击登录按钮
 	driver.find_element_by_id('J-login').click()
+
+	return True
 
 # 选择乘客函数
 def choose_passenger(driver):
@@ -112,6 +117,10 @@ def  query_tickets(driver,s_station,e_station,travel_dates):
 
 	time.sleep(1)
 
+	"""写一段js判断是否有票"""
+	js = 'var tbody = document.getElementById("queryLeftTable"); \
+	'
+
 
 
 # 打开浏览器
@@ -121,12 +130,11 @@ driver.implicitly_wait(5)
 # 登录
 while True:
 	login(driver)
-	if driver.current_url!='https://kyfw.12306.cn/otn/resources/login.html':
-		print("登陆成功！")
+	if driver.current_url!='https://kyfw.12306.cn/otn/resources/login.html':		
 		break;
 	print("输入信息有误，请重新输入：")
 
-
+print("=================登陆成功！===================")
 time.sleep(10)
 '''进入购票流程'''
 # 读取常用联系人，选择要购票的乘客，乘客姓名保存到列表里
