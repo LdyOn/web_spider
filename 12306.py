@@ -89,16 +89,17 @@ seat_level = [2,3,7,9]
 
 while True:
 	# 判断能否购买，可以购买进入选择乘客页
-	can_buy(driver,list_to_string(trains),
+	fc.can_buy(driver,fc.list_to_string(trains),
 		str(len(passengers)),
-		list_to_string(seat_level))
+		fc.list_to_string(seat_level))
+	time.sleep(1)
 	if driver.current_url=='https://kyfw.12306.cn/otn/confirmPassenger/initDc':
-		confirm_buy(driver, passengers)
+		fc.confirm_buy(driver, passengers)
 		break;
 	fc.query_tickets(driver, travel_dates)
 	query_times+=1
-	print("查询次数:")
-	time.sleep(1)
+	print("查询次数:{0}".format(query_times))
+	
 
 
 

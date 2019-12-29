@@ -1,5 +1,7 @@
 import time
 import random
+from selenium import webdriver
+import mail
 
 # 登录函数
 def login(driver):
@@ -47,7 +49,7 @@ def login(driver):
 		webdriver.ActionChains(driver).move_to_element_with_offset(img_code,
 			site[x][0],site[x][1]).click().perform()
 
-	time.sleep(6)
+	time.sleep(2)
 
 	# 点击登录按钮
 	driver.find_element_by_id('J-login').click()
@@ -115,7 +117,8 @@ def choose_train(driver):
 
 # 判断是否有票
 def can_buy(driver,train_number,passenger_num,seat_level):
-
+	if driver.current_url != 'https://kyfw.12306.cn/otn/leftTicket/init':
+		return
 	js ='var tb = document.getElementById("queryLeftTable");\
 		var rows = tb.children;\
 		var train_number = '+train_number+';\
@@ -142,29 +145,29 @@ def can_buy(driver,train_number,passenger_num,seat_level):
 # 点击下单，确认购买
 def confirm_buy(driver, passengers):
 	ticket = driver.find_element_by_id("ticket_tit_id")
-	print("".format(ticket.text))
+	print("已为您购买此列车：{0}".format(ticket.text))
 	js='var passengers='+list_to_string(passengers)+';\
 		var passengers_list = document.getElementById("normal_passenger_id");\
 		var li = passengers_list.children;\
 		var length = li.length;\
 		for(var i = 0;i<length;i++){\
-			if(passengers.indexOf(li.children[1].textContent)==-1){\
+			if(passengers.indexOf(li[i].children[1].textContent)==-1){\
 				continue;\
 			}\
-			li.children[0].click();\
+			li[i].children[0].click();\
 		};\
 		document.getElementById("submitOrder_id").click()\
 	'
 	driver.execute_script(js)
 
 	print("订单已提交，请登录12306完成支付")
-	#接下来可以发送邮件通知
-
+	#接下来发送邮件通知
+	mail.mail("已为您购买此列车：{0}，请在半小时之内登录12306完成支付".format(ticket.text))
 
 def list_to_string(li):
 	t_n = ""
 	for x in li:
-		t_n += '"'+x+'",'
+		t_n += '"'+str(x)+'",'
 	t_n = '['+t_n+']'
 
 	return t_n
