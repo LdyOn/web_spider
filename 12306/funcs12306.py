@@ -49,11 +49,9 @@ def login(driver):
 	return True
 
 # 选择乘客
-def choose_passenger(driver):
-	while True:
+def choose_passenger(driver):		
+	if not ('https://kyfw.12306.cn/otn/view/passengers.html' in driver.current_url):
 		driver.get('https://kyfw.12306.cn/otn/view/passengers.html')
-		if 'https://kyfw.12306.cn/otn/view/passengers.html' in driver.current_url:
-			break
 	# 保存常用联系人
 	passengers = []
 	choose = []
