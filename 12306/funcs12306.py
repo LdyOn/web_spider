@@ -5,20 +5,12 @@ import mail
 
 # 登录函数
 def login(driver):
-	print("正在登录12306...")
-	# 进入12306登录页
-	driver.get("https://kyfw.12306.cn/otn/resources/login.html")
-	
-	time.sleep(1)
-
-	
 	# 执行js脚本选择账号密码登陆
 	try:
 		driver.execute_script('var c = document.querySelectorAll\
 			(".login-hd-account > a:nth-child(1)");c[0].click();')
 	except Exception as e:
 		return False
-	
 	# 用户名
 	login_name = input("输入用户名/邮箱/手机号：")
 	# 登陆密码
@@ -58,8 +50,10 @@ def login(driver):
 
 # 选择乘客
 def choose_passenger(driver):
-	# 查看常用联系人
-	driver.get('https://kyfw.12306.cn/otn/view/passengers.html')
+	while True:
+		driver.get('https://kyfw.12306.cn/otn/view/passengers.html')
+		if 'https://kyfw.12306.cn/otn/view/passengers.html' in driver.current_url:
+			break
 	# 保存常用联系人
 	passengers = []
 	choose = []
@@ -94,7 +88,7 @@ def  query_tickets(driver,travel_dates):
 	driver.execute_script('document.getElementById("train_date").removeAttribute("readonly");')
 	date = driver.find_element_by_id('train_date')
 	date.clear()
-	date.send_keys(travel_dates[random.randint(0,len(travel_dates))])
+	date.send_keys(travel_dates[random.randint(0,len(travel_dates)-1)])
 	# 点击查询
 	driver.execute_script('document.getElementById("query_ticket").click();')
 
@@ -113,6 +107,7 @@ def choose_train(driver):
 	print("{0:6} {1:6}".format("车次","出发时间"))
 	for x in trains.items():
 		print("{0:6} {1:6}".format(x[0],x[1]))
+
 	return list(input("选择车次，多个用空格分隔：").split())
 
 # 判断是否有票
@@ -146,23 +141,26 @@ def can_buy(driver,train_number,passenger_num,seat_level):
 def confirm_buy(driver, passengers):
 	ticket = driver.find_element_by_id("ticket_tit_id")
 	print("已为您购买此列车：{0}".format(ticket.text))
-	js='var passengers='+list_to_string(passengers)+';\
+	js='var passengers='+passengers+';\
+		console.log(passengers);\
 		var passengers_list = document.getElementById("normal_passenger_id");\
 		var li = passengers_list.children;\
-		var length = li.length;\
-		for(var i = 0;i<length;i++){\
+		console.log(passengers_list);\
+		console.log(li);\
+		for(var i = 0; i<li.length; i++){\
+			console.log(li[i].children[1].textContent);\
 			if(passengers.indexOf(li[i].children[1].textContent)==-1){\
 				continue;\
 			}\
 			li[i].children[0].click();\
-		};\
-		document.getElementById("submitOrder_id").click()\
+		}\
+		document.getElementById("submitOrder_id").click();\
 	'
 	driver.execute_script(js)
 
 	print("订单已提交，请登录12306完成支付")
 	#接下来发送邮件通知
-	mail.mail("已为您购买此列车：{0}，请在半小时之内登录12306完成支付".format(ticket.text))
+	mail.mail("已为您预订{0}，请在半小时之内登录12306完成支付。".format(ticket.text))
 
 def list_to_string(li):
 	t_n = ""

@@ -1,21 +1,99 @@
-import smtplib
-from email.mime.text import MIMEText
-from email.utils import formataddr
+# -*- coding: UTF-8 -*-
+# python购票脚本
+import time
+import random
+from selenium import webdriver
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.common.action_chains import ActionChains
+import funcs12306 as fc
+# 打开浏览器
+driver = webdriver.Firefox()
 
-my_sender='1185946887@qq.com'
-my_pass = 'svpmgkriyjhsidgd'
-my_user='1185946887@qq.com'
+# 等待5秒
+driver.implicitly_wait(5)
+'''进入购票流程'''
+# 读取常用联系人，选择要购票的乘客，乘客姓名保存到列表里
+driver.get('https://kyfw.12306.cn/otn/view/passengers.html')
+passengers = fc.choose_passenger(driver)
+
+#输入出发站和终点站
+station = list(input("输入出发站和终点站（空格分隔）：").split())
+
+# 输入出发日期
+travel_dates = list(\
+	input("输入出行日期（例2020-01-09，多个用空格分隔）：")\
+	.split());
+
+# 进入车票查询页
+driver.get('https://kyfw.12306.cn/otn/leftTicket/init')
+
+# 设置出发地
+s = driver.find_element_by_id('fromStationText')
+ActionChains(driver).move_to_element(s)\
+.click(s)\
+.send_keys_to_element(s, station[0])\
+.move_by_offset(20,50)\
+.click()\
+.perform()
 
 
-def mail():
-	msg = MIMEText('helloworld','plain','gbk')
-	msg['From'] = formataddr(["FromRunoob", my_sender])
-	msg['To'] = formataddr(["FK",my_user])
-	msg['Subject'] = "hello"
+# 设置目的地
+e = driver.find_element_by_id('toStationText')
+ActionChains(driver).move_to_element(e)\
+.click(e)\
+.send_keys_to_element(e, station[1])\
+.move_by_offset(20,50)\
+.click()\
+.perform()
 
-	server=smtplib.SMTP_SSL("smtp.qq.com", 465)
-	server.login(my_sender, my_pass)
-	server.sendmail(my_sender,[my_user,],msg.as_string())
-	server.quit()
 
-mail()
+# 设置出发日
+driver.execute_script('document.getElementById("train_date").removeAttribute("readonly");')
+date = driver.find_element_by_id('train_date')
+date.clear()
+date.send_keys(travel_dates[random.randint(0,len(travel_dates)-1)])
+
+# 点击查询
+driver.execute_script('document.getElementById("query_ticket").click();')
+# 选择车次
+trains = fc.choose_train(driver)
+
+"""
+	票种：
+		1:商务座
+		2：一等座
+		3：二等座
+		4：高级软卧
+		5：软卧一等卧
+		6：动卧
+		7：硬卧二等卧
+		8：软座
+		9：硬座
+		10：无座
+"""
+# 默认抢一等座、二等座、硬卧、硬座
+seat_level = [2,3,7,9]
+
+while True:
+	print("查询次数:{0}".format(query_times))
+	# 判断能否购买，可以购买进入选择乘客页
+	fc.can_buy(driver,fc.list_to_string(trains),
+		str(len(passengers)),
+		fc.list_to_string(seat_level))
+	time.sleep(1)
+	if driver.current_url=='https://kyfw.12306.cn/otn/confirmPassenger/initDc':
+		fc.confirm_buy(driver, fc.list_to_string(passengers))
+		break;
+	fc.query_tickets(driver, travel_dates)
+	query_times+=1
+	
+	
+
+
+
+
+
+
+
+
+

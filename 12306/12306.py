@@ -11,13 +11,17 @@ import funcs12306 as fc
 # 打开浏览器
 driver = webdriver.Firefox()
 # 记录查询次数
-query_times = 0
+query_times = 1
 # 等待5秒
 driver.implicitly_wait(5)
+print("正在登录12306...")
+# 进入登录页
+driver.get("https://kyfw.12306.cn/otn/resources/login.html")
+time.sleep(1)
 # 登录
 while True:
 	fc.login(driver)
-	time.sleep(2)
+	time.sleep(1)
 	if driver.current_url!='https://kyfw.12306.cn/otn/resources/login.html':		
 		break;
 	print("输入信息有误，请重新输入：")
@@ -27,6 +31,7 @@ print("==================== 登陆成功！ ======================")
 
 '''进入购票流程'''
 # 读取常用联系人，选择要购票的乘客，乘客姓名保存到列表里
+driver.get('https://kyfw.12306.cn/otn/view/passengers.html')
 passengers = fc.choose_passenger(driver)
 
 #输入出发站和终点站
@@ -88,17 +93,18 @@ trains = fc.choose_train(driver)
 seat_level = [2,3,7,9]
 
 while True:
+	print("查询次数:{0}".format(query_times))
 	# 判断能否购买，可以购买进入选择乘客页
 	fc.can_buy(driver,fc.list_to_string(trains),
 		str(len(passengers)),
 		fc.list_to_string(seat_level))
 	time.sleep(1)
 	if driver.current_url=='https://kyfw.12306.cn/otn/confirmPassenger/initDc':
-		fc.confirm_buy(driver, passengers)
+		fc.confirm_buy(driver, fc.list_to_string(passengers))
 		break;
 	fc.query_tickets(driver, travel_dates)
 	query_times+=1
-	print("查询次数:{0}".format(query_times))
+	
 	
 
 
