@@ -2,15 +2,19 @@ import time
 import random
 from selenium import webdriver
 import mail
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
 
 # 登录函数
 def login(driver):
 	# 执行js脚本选择账号密码登陆
 	try:
+		WebDriverWait(driver, 6).until(EC.presence_of_element_located((By.CLASS_NAME,"login-hd")))
 		driver.execute_script('var c = document.querySelectorAll\
 			(".login-hd-account > a:nth-child(1)");c[0].click();')
 	except Exception as e:
-		return False
+		print(e)
 	# 用户名
 	login_name = input("输入用户名/邮箱/手机号：")
 	# 登陆密码
@@ -41,7 +45,7 @@ def login(driver):
 		webdriver.ActionChains(driver).move_to_element_with_offset(img_code,
 			site[x][0],site[x][1]).click().perform()
 
-	time.sleep(2)
+	time.sleep(1)
 
 	# 点击登录按钮
 	driver.find_element_by_id('J-login').click()
@@ -50,8 +54,9 @@ def login(driver):
 
 # 选择乘客
 def choose_passenger(driver):		
-	if not ('https://kyfw.12306.cn/otn/view/passengers.html' in driver.current_url):
+	while not ('https://kyfw.12306.cn/otn/view/passengers.html' in driver.current_url):
 		driver.get('https://kyfw.12306.cn/otn/view/passengers.html')
+		print("find passengers")
 	# 保存常用联系人
 	passengers = []
 	choose = []
@@ -65,8 +70,9 @@ def choose_passenger(driver):
 			js = 'var next = document.getElementsByClassName("next");\
 			next[0].click();'
 			driver.execute_script(js)
-			time.sleep(2)
+			time.sleep(1)
 		except Exception as e:
+			print(e)
 			print("乘客信息如下：")
 			for i in range(len(passengers)):
 				print('{0:3}  {1:5}'.format(i,passengers[i]))
@@ -137,13 +143,18 @@ def can_buy(driver,train_number,passenger_num,seat_level):
 
 # 点击下单，确认购买
 def confirm_buy(driver, passengers):
-	ticket = driver.find_element_by_id("ticket_tit_id")
-	print("已为您购买此列车：{0}".format(ticket.text))
-	js='var passengers='+passengers+';\
+	try:
+		ticket = WebDriverWait(driver, 6).until(EC.presence_of_element_located((By.ID,"ticket_tit_id")))
+	except Exception as e:
+		print(e)
+
+	print("已为您预订：{0}".format(ticket.text))
+
+	js = 'var passengers='+passengers+';\
 		console.log(passengers);\
 		var passengers_list = document.getElementById("normal_passenger_id");\
 		var li = passengers_list.children;\
-		console.log(passengers_list);\
+		while(li.length==0);\
 		console.log(li);\
 		for(var i = 0; i<li.length; i++){\
 			console.log(li[i].children[1].textContent);\
@@ -154,7 +165,10 @@ def confirm_buy(driver, passengers):
 		}\
 		document.getElementById("submitOrder_id").click();\
 	'
+
 	driver.execute_script(js)
+
+	driver.find_element_by_id("qr_submit_id").click()
 
 	print("订单已提交，请登录12306完成支付")
 	#接下来发送邮件通知

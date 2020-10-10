@@ -6,6 +6,8 @@ from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.action_chains import ActionChains
 import funcs12306 as fc
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
 
 
 # 打开浏览器
@@ -30,6 +32,8 @@ while True:
 print("==================== 登陆成功！ ======================")
 
 '''进入购票流程'''
+# 等待进入个人中心
+WebDriverWait(driver, 5).until(EC.presence_of_element_located((By.CLASS_NAME,"welcome-data")))
 # 读取常用联系人，选择要购票的乘客，乘客姓名保存到列表里
 driver.get('https://kyfw.12306.cn/otn/view/passengers.html')
 passengers = fc.choose_passenger(driver)
@@ -98,7 +102,6 @@ while True:
 	fc.can_buy(driver,fc.list_to_string(trains),
 		str(len(passengers)),
 		fc.list_to_string(seat_level))
-	time.sleep(1)
 	if driver.current_url=='https://kyfw.12306.cn/otn/confirmPassenger/initDc':
 		fc.confirm_buy(driver, fc.list_to_string(passengers))
 		break;
